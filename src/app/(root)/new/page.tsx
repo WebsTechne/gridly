@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn, toA1Col } from "@/lib/utils";
 import { PencilEdit02Icon, X } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 
 export type CellData = {
   label?: string;
@@ -240,12 +240,14 @@ export default function New() {
           <ScrollArea className="table-wrap w-full">
             <div
               className="gridly-table-borders grid text-xs!"
-              style={{
-                gridTemplateColumns: `80px repeat(${selectedGrid.cols}, minmax(100px, auto))`,
-                gridAutoRows: "minmax(40px, auto)",
-                "--rows": selectedGrid.rows + 1,
-                "--cols": selectedGrid.cols + 1,
-              }}
+              style={
+                {
+                  gridTemplateColumns: `80px repeat(${selectedGrid.cols}, minmax(100px, auto))`,
+                  gridAutoRows: "minmax(40px, auto)",
+                  "--rows": selectedGrid.rows + 1,
+                  "--cols": selectedGrid.cols + 1,
+                } as CSSProperties
+              }
             >
               {/* Empty top-left corner */}
               <div className="flex-center cursor-pointer bg-transparent p-2 font-bold" />
