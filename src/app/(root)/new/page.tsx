@@ -17,6 +17,7 @@ import { type CSSProperties, useState } from "react";
 
 export type CellData = {
   label?: string;
+  content?: string;
   // future properties like 'highlight', 'tags' can go here
 };
 
@@ -38,6 +39,9 @@ export type TableData = {
 
 export default function New() {
   // const list = ["CYB201", "MTH203", "PHY201", "CHE201", "PHY202"];
+  const [tableTheme, setTableTheme] = useState<
+    "amber" | "classic" | "blue" | "excel"
+  >("amber");
 
   const xs = useIsMobile(400);
 
@@ -57,6 +61,10 @@ export default function New() {
   const [editingHeading, setEditingHeading] = useState<{
     type: "col" | "row";
     id: string;
+  } | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    cellId: string;
+    content: string;
   } | null>(null);
 
   const maxRows = 14;
@@ -124,9 +132,10 @@ export default function New() {
                           max={maxRows}
                           value={rows}
                           onChange={(e) => {
-                            setRows(Number(e.target.value));
+                            const newRows = Number(e.target.value);
+                            setRows(newRows);
                             setSelectionLocked(false);
-                            setHoverCell(null);
+                            setHoverCell({ row: newRows - 1, col: cols - 1 });
                           }}
                         />
                       </div>
@@ -143,9 +152,10 @@ export default function New() {
                           max={maxCols}
                           value={cols}
                           onChange={(e) => {
-                            setCols(Number(e.target.value));
+                            const newCols = Number(e.target.value);
+                            setCols(newCols);
                             setSelectionLocked(false);
-                            setHoverCell(null);
+                            setHoverCell({ row: rows - 1, col: newCols - 1 });
                           }}
                         />
                       </div>
@@ -170,9 +180,10 @@ export default function New() {
                       max={maxRows}
                       value={rows}
                       onChange={(e) => {
-                        setRows(Number(e.target.value));
+                        const newRows = Number(e.target.value);
+                        setRows(newRows);
                         setSelectionLocked(false);
-                        setHoverCell(null);
+                        setHoverCell({ row: newRows - 1, col: cols - 1 });
                       }}
                     />
                   </div>
@@ -189,9 +200,10 @@ export default function New() {
                       max={maxCols}
                       value={cols}
                       onChange={(e) => {
-                        setCols(Number(e.target.value));
+                        const newCols = Number(e.target.value);
+                        setCols(newCols);
                         setSelectionLocked(false);
-                        setHoverCell(null);
+                        setHoverCell({ row: rows - 1, col: newCols - 1 });
                       }}
                     />
                   </div>
@@ -239,10 +251,10 @@ export default function New() {
         ) : (
           <ScrollArea className="table-wrap w-full">
             <div
-              className="gridly-table-borders grid text-xs!"
+              className={`gridly-table s ${tableTheme}`}
               style={
                 {
-                  gridTemplateColumns: `80px repeat(${selectedGrid.cols}, minmax(100px, auto))`,
+                  gridTemplateColumns: `80px repeat(${selectedGrid.cols}, minmax(60px, auto))`,
                   gridAutoRows: "minmax(40px, auto)",
                   "--rows": selectedGrid.rows + 1,
                   "--cols": selectedGrid.cols + 1,
@@ -279,7 +291,7 @@ export default function New() {
                     onClick={() =>
                       setEditingHeading({ type: "col", id: colId })
                     }
-                    className="flex-center cursor-pointer bg-amber-700/30 p-2 font-bold uppercase"
+                    className="colHead"
                   >
                     {colHeadings[colId] || colId}
                   </div>
@@ -316,7 +328,7 @@ export default function New() {
                       onClick={() =>
                         setEditingHeading({ type: "row", id: rowId })
                       }
-                      className="flex-center cursor-pointer bg-amber-700/70 p-2 font-bold"
+                      className="rowHead"
                     >
                       {rowHeadings[rowId] || rowId}
                     </div>
@@ -325,19 +337,36 @@ export default function New() {
                   ...Array.from({ length: selectedGrid.cols }).map((_, col) => {
                     const colId = toA1Col(col);
                     const cellId = `${colId}-${rowId}`;
+                    const cellData = cells[cellId];
+
+                    const isEditingCell = editingCell?.cellId === cellId;
+
                     return (
-                      <Popover key={`cell-${cellId}`}>
+                      <Popover
+                        key={`cell-${cellId}`}
+                        open={isEditingCell}
+                        onOpenChange={(open) => {
+                          if (open) {
+                            setEditingCell({
+                              cellId,
+                              content: cellData?.content || "",
+                            });
+                          } else {
+                            setEditingCell(null);
+                          }
+                        }}
+                      >
                         <PopoverTrigger
                           render={
-                            <div className="flex-center relative cursor-pointer p-2 [&:hover_.edit-icon]:opacity-100"></div>
+                            <div className="flex-center cell relative cursor-pointer p-2 [&:hover_.edit-icon]:opacity-100" />
                           }
                         >
-                          <span>{cellId}</span>
-                          <div className="flex-center bg-card/60 edit-icon pointer-events-none absolute inset-x-2 inset-y-1 z-100 rounded-sm opacity-0 backdrop-blur-sm duration-100">
+                          <span>{cellData?.content}</span>
+                          <div className="flex-center bg-card/60 edit-icon pointer-events-none absolute inset-1 z-100 rounded-sm opacity-0 backdrop-blur-sm duration-100">
                             <HugeiconsIcon
                               icon={PencilEdit02Icon}
                               strokeWidth={2}
-                              className="text-muted-foreground size-5"
+                              className="text-muted-foreground size-4"
                             />
                           </div>
                         </PopoverTrigger>
@@ -360,6 +389,38 @@ export default function New() {
                               <span className="font-semibold">ID:</span>{" "}
                               {cellId.split("-").join("")}
                             </p>
+                            <Input
+                              value={editingCell?.content ?? ""}
+                              onChange={(e) =>
+                                setEditingCell((prev) =>
+                                  prev
+                                    ? { ...prev, content: e.target.value }
+                                    : null,
+                                )
+                              }
+                              placeholder="Enter content..."
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              disabled={
+                                editingCell?.content ===
+                                (cellData?.content || "")
+                              }
+                              onClick={() => {
+                                if (!editingCell) return;
+                                setCells((prev) => ({
+                                  ...prev,
+                                  [cellId]: {
+                                    ...prev[cellId],
+                                    content: editingCell.content,
+                                  },
+                                }));
+                                setEditingCell(null); // closes popover
+                              }}
+                            >
+                              Save
+                            </Button>
                           </div>
                         </PopoverContent>
                       </Popover>

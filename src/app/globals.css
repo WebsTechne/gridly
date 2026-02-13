@@ -162,24 +162,8 @@
   @apply flex items-center justify-center;
 }
 
-@layer components {
-  .gridly-table {
-    @apply border;
-  }
-}
-
-.gridly-table-borders {
-  /* These will be set via inline styles in React */
-  --cols: 1;
-  --rows: 1;
-
-  width: max-content;
-  border-bottom: 1px solid theme("colors.border");
-  border-right: 1px solid theme("colors.border");
-}
-
 /* Default border for all cells */
-/*.gridly-table-borders > div {
+/*.gridly-table > div {
   border-top: 1px solid theme("colors.border");
   border-left: 1px solid theme("colors.border");*/
 /* The default border from your component is overridden here */
@@ -188,12 +172,41 @@
 }*/
 
 /* Add right border to cells in the last column */
-/*.gridly-table-borders > div:nth-child(var(--cols)n) {
+/*.gridly-table > div:nth-child(var(--cols)n) {
   border-right: 1px solid theme("colors.border");
 }*/
 
 /* Add bottom border to cells in the last row */
-/*.gridly-table-borders
+/*.gridly-table
   > div:nth-child(n + calc((var(--rows) - 1) * var(--cols) + 1)) {
   border-bottom: 1px solid theme("colors.border");
 }*/
+
+.gridly-table {
+  @apply bg-border grid w-max gap-px p-px text-xs!;
+
+  --amber-col: #3f1e07;
+  --amber-row: #863903;
+
+  .colHead {
+    @apply flex-center cursor-pointer p-2 font-bold uppercase;
+  }
+  .rowHead {
+    @apply flex-center cursor-pointer p-2 font-bold;
+  }
+  .cell {
+    @apply font-mono!;
+  }
+
+  &.amber {
+    .colHead {
+      @apply bg-(--amber-col) text-white;
+    }
+    .rowHead {
+      @apply bg-(--amber-row) text-white;
+    }
+    .cell {
+      @apply bg-background;
+    }
+  }
+}
