@@ -183,30 +183,47 @@
 }*/
 
 .gridly-table {
-  @apply bg-border grid w-max gap-px p-px text-xs!;
+  @apply bg-background grid w-max gap-px p-px text-xs;
 
-  --amber-col: #3f1e07;
-  --amber-row: #863903;
+  /*--amber-col: #3f1e07;*/
+  /*--amber-row: #863903;*/
+  --dafe-background: #345d73;
 
   .colHead {
-    @apply flex-center cursor-pointer p-2 font-bold uppercase;
+    @apply flex-center relative cursor-pointer p-2 font-mono font-bold tracking-wide uppercase [&:hover_.edit-icon]:opacity-100;
   }
   .rowHead {
-    @apply flex-center cursor-pointer p-2 font-bold;
+    @apply flex-center relative cursor-pointer p-2 font-mono font-bold tracking-wide [&:hover_.edit-icon]:opacity-100;
   }
   .cell {
-    @apply font-mono!;
+    @apply font-mono text-sm font-semibold tracking-wide;
   }
 
   &.amber {
+    @apply bg-muted-foreground/60 gap-0.5 p-0.5;
+
     .colHead {
-      @apply bg-(--amber-col) text-white;
+      @apply bg-amber-600 text-white;
     }
     .rowHead {
-      @apply bg-(--amber-row) text-white;
+      @apply bg-amber-700 text-white dark:bg-amber-800;
     }
     .cell {
-      @apply bg-background;
+      @apply bg-muted;
+    }
+  }
+
+  &.dafe {
+    @apply bg-background! gap-0.5 p-0.5;
+
+    .colHead {
+      @apply text-background bg-gray-200;
+    }
+    .rowHead {
+      @apply text-background bg-gray-200;
+    }
+    .cell {
+      @apply bg-(--dafe-background) text-white;
     }
   }
 }
