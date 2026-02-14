@@ -44,7 +44,7 @@ export type TableData = {
 };
 
 export function NewGridPage() {
-  // const list = ["CYB201", "MTH203", "PHY201", "CHE201", "PHY202"];
+  const [tableName, setTableName] = useState("");
   const [tableTheme, setTableTheme] = useState<
     "amber" | "classic" | "blue" | "excel" | "dafe"
   >("dafe");
@@ -114,12 +114,20 @@ export function NewGridPage() {
 
         <div
           className={cn(
-            "has-[input:focus]:border-primary relative h-10 w-75 overflow-clip rounded-lg border-2 p-2 duration-100",
-            "[&:has(input:focus)>.name-label]:-top-1/2!",
+            "has-[input:focus]:border-primary relative h-10 w-75 rounded-lg border-2 p-2 duration-100",
+            "[&:has(input:focus)>.name-label]:top-0! [&:has(input:valid)>.name-label]:top-0!",
+            "[&:has(input:focus)>.name-label]:-translate-y-1/2! [&:has(input:valid)>.name-label]:-translate-y-1/2!",
+            "[&:has(input:focus)>.name-label]:text-sm! [&:has(input:valid)>.name-label]:text-sm!",
+            "[&:has(input:focus)>.name-label]:text-primary! [&:has(input:valid)>.name-label]:text-primary!",
           )}
         >
-          <input className="absolute inset-0 rounded-[inherit] border-none px-2 outline-none" />
-          <span className="bg-background text-muted-foreground flex-center name-label pointer-events-none absolute top-2 h-6 px-1">
+          <input
+            value={tableName}
+            onChange={(val) => setTableName(val.target.value)}
+            min={1}
+            className="absolute inset-0 rounded-[inherit] border-none px-2 outline-none"
+          />
+          <span className="bg-background text-muted-foreground flex-center name-label pointer-events-none absolute top-2 z-2 h-6 px-1">
             Table name
           </span>
         </div>
