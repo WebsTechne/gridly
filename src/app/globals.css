@@ -217,10 +217,10 @@
     @apply bg-background! gap-0.5 p-0.5;
 
     .colHead {
-      @apply text-background bg-gray-200;
+      @apply text-background bg-gray-400 dark:bg-gray-200;
     }
     .rowHead {
-      @apply text-background bg-gray-200;
+      @apply text-background bg-gray-400 dark:bg-gray-200;
     }
     .cell {
       @apply bg-(--dafe-background) text-white;

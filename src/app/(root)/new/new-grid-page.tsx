@@ -18,6 +18,8 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { GridSelector } from "./grid-selector";
 import { GridCell } from "./grid-cell";
 
+export type TableTheme = "amber" | "classic" | "blue" | "excel" | "dafe";
+
 export type CellData = {
   label?: string;
   content?: string;
@@ -31,6 +33,7 @@ export type GridCells = { [cellId: string]: CellData }; // e.g., { 'A-1': { labe
 export type TableData = {
   id: string; // a unique ID for the whole table
   name: string;
+  theme: TableTheme;
   config: {
     rows: number;
     cols: number;
@@ -70,11 +73,58 @@ export function NewGridPage() {
     setSelectedGrid({ rows, cols });
   };
 
+  const handleSaveTable = () => {
+    if (!selectedGrid) {
+      // Can't save a table that doesn't exist
+      return;
+    }
+
+    const newTableId = crypto.randomUUID();
+    const tableName = "My Awesome Table";
+    // 2. Assemble the data from your state
+    const tableToSave: TableData = {
+      id: newTableId,
+      name: tableName,
+      theme: tableTheme,
+      config: {
+        rows: selectedGrid.rows,
+        cols: selectedGrid.cols,
+      },
+      colHeadings: colHeadings,
+      rowHeadings: rowHeadings,
+      cells: cells,
+      // theme: tableTheme, // if you decide to save it
+    };
+
+    // 3. Serialize and save to localStorage
+    const tableJson = JSON.stringify(tableToSave);
+    localStorage.setItem(newTableId, tableJson);
+
+    // You might want to save an index of all table IDs as well
+    // const allTableIds = JSON.parse(localStorage.getItem('gridly-tables') || '[]');
+    // localStorage.setItem('gridly-tables', JSON.stringify([...allTableIds, newTableId]));
+
+    alert("Table saved!");
+  };
+
   return (
     <>
-      <section>
+      <section className="flex flex-row items-center gap-5">
         <h1 className="heading">New Table</h1>
+
+        <div
+          className={cn(
+            "has-[input:focus]:border-primary relative h-10 w-75 overflow-clip rounded-lg border-2 p-2 duration-100",
+            "[&:has(input:focus)>.name-label]:-top-1/2!",
+          )}
+        >
+          <input className="absolute inset-0 rounded-[inherit] border-none px-2 outline-none" />
+          <span className="bg-background text-muted-foreground flex-center name-label pointer-events-none absolute top-2 h-6 px-1">
+            Table name
+          </span>
+        </div>
       </section>
+
       <Separator />
 
       <section className={cn("py-2.5", selectedGrid && "")}>
