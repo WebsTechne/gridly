@@ -76,12 +76,14 @@ export function GridSelector({
   };
 
   return (
-    <div className="xs:flex-row xs:gap-3 flex h-max flex-col gap-2">
+    <div className="xs:flex-row xs:gap-3 flex h-max flex-col gap-2 p-3">
       <div className="not-xs:flex-1 xs:h-max xs:border-r xs:min-w-41 xs:flex-col xs:px-1 flex w-full min-w-30 flex-row gap-2">
         {xs ? (
           <Popover>
-            <PopoverTrigger asChild>
-              <Button className="xs:hidden! inline-block">Create Table</Button>
+            <PopoverTrigger
+              render={<Button className="xs:hidden! inline-block" />}
+            >
+              Create Table
             </PopoverTrigger>
             <PopoverContent>
               <div className="flex max-w-80 flex-col gap-4">
@@ -156,9 +158,7 @@ export function GridSelector({
                   setHoverCell({ row: newRows - 1, col: cols - 1 });
                 }}
               />
-              {rowError && (
-                <p className="text-xs text-red-500">{rowError}</p>
-              )}
+              {rowError && <p className="text-xs text-red-500">{rowError}</p>}
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="cols-input" className="text-sm">

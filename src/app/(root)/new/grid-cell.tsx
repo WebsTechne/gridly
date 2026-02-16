@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PencilEdit02Icon, X } from "@hugeicons/core-free-icons";
+import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { type CellData } from "./new-grid-page";
 
@@ -39,7 +39,7 @@ export function GridCell({
       <PopoverTrigger
         nativeButton={false}
         render={
-          <div className="flex-center cell relative cursor-pointer p-2 [&:hover_.edit-icon]:opacity-100" />
+          <div className="cell relative [&:hover_.edit-icon]:opacity-100" />
         }
       >
         <span>{cellData?.content}</span>
@@ -54,12 +54,7 @@ export function GridCell({
       <PopoverContent>
         <div className="flex flex-col gap-2 text-sm">
           <p className="flex flex-row flex-wrap items-center gap-1">
-            <code className="font-semibold">{rowHeader}</code>
-            <HugeiconsIcon
-              icon={X}
-              strokeWidth={2}
-              className="text-muted-foreground size-3"
-            />
+            <code className="font-semibold">{rowHeader}</code>—
             <code className="font-semibold">{colHeader}</code>
           </p>
           <p>
