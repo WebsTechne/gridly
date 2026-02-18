@@ -164,6 +164,10 @@
   @apply flex items-center justify-center;
 }
 
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+}
+
 .gridly-table {
   @apply bg-background grid w-max gap-0.5 text-xs not-[.no-outline]:p-0.5;
 
@@ -244,4 +248,8 @@
       @apply bg-(--dafe-background) text-white;
     }
   }
+}
+
+.slot[data-swapy-highlighted] {
+  background: rgba(255, 255, 255, 0.2);
 }

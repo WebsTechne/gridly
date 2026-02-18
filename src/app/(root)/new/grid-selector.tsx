@@ -2,14 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 interface GridSelectorProps {
   onCreateTable: (rows: number, cols: number) => void;
@@ -32,8 +26,6 @@ export function GridSelector({
     col: number;
   } | null>(null);
   const [isSelectionLocked, setSelectionLocked] = useState(false);
-
-  const xs = useIsMobile(400);
 
   useEffect(() => {
     if (rows < 1 || rows > maxRows) {
@@ -70,131 +62,79 @@ export function GridSelector({
     setCols(col + 1);
   };
 
-  const handleCreateTableClick = () => {
+  const handleCreateTableClick = (e: FormEvent) => {
+    e.preventDefault();
+
     if (rowError || colError) return;
     onCreateTable(rows, cols);
   };
 
   return (
-    <div className="xs:flex-row xs:gap-3 flex h-max flex-col gap-2 p-3">
-      <div className="not-xs:flex-1 xs:h-max xs:border-r xs:min-w-41 xs:flex-col xs:px-1 flex w-full min-w-30 flex-row gap-2">
-        {xs ? (
-          <Popover>
-            <PopoverTrigger
-              render={<Button className="xs:hidden! inline-block" />}
-            >
-              Create Table
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="flex max-w-80 flex-col gap-4">
-                <div className="flex flex-col">
-                  <label htmlFor="rows-input" className="text-sm">
-                    Rows
-                  </label>
-                  <Input
-                    id="rows-input"
-                    className="w-full text-sm"
-                    type="text"
-                    inputMode="numeric"
-                    min={1}
-                    max={maxRows}
-                    value={rows}
-                    onChange={(e) => {
-                      const newRows = Number(e.target.value);
-                      setRows(newRows);
-                      setSelectionLocked(false);
-                      setHoverCell({ row: newRows - 1, col: cols - 1 });
-                    }}
-                  />
-                  {rowError && (
-                    <p className="text-xs text-red-500">{rowError}</p>
-                  )}
-                </div>
-                <div className="flex flex-col">
-                  <label htmlFor="cols-input" className="text-sm">
-                    Columns
-                  </label>
-                  <Input
-                    id="cols-input"
-                    className="text-sm"
-                    type="text"
-                    inputMode="numeric"
-                    min={1}
-                    max={maxCols}
-                    value={cols}
-                    onChange={(e) => {
-                      const newCols = Number(e.target.value);
-                      setCols(newCols);
-                      setSelectionLocked(false);
-                      setHoverCell({ row: rows - 1, col: newCols - 1 });
-                    }}
-                  />
-                  {colError && (
-                    <p className="text-xs text-red-500">{colError}</p>
-                  )}
-                </div>
-                <Button onClick={handleCreateTableClick}>Create Table</Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        ) : (
-          <div className="flex max-w-80 flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="rows-input" className="text-sm">
-                Rows
-              </label>
-              <Input
-                id="rows-input"
-                className="w-full text-sm"
-                type="text"
-                inputMode="numeric"
-                min={1}
-                max={maxRows}
-                value={rows}
-                onChange={(e) => {
-                  const newRows = Number(e.target.value);
-                  setRows(newRows);
-                  setSelectionLocked(false);
-                  setHoverCell({ row: newRows - 1, col: cols - 1 });
-                }}
-              />
-              {rowError && <p className="text-xs text-red-500">{rowError}</p>}
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="cols-input" className="text-sm">
-                Columns
-              </label>
-              <Input
-                id="cols-input"
-                className="text-sm"
-                type="text"
-                inputMode="numeric"
-                min={1}
-                max={maxCols}
-                value={cols}
-                onChange={(e) => {
-                  const newCols = Number(e.target.value);
-                  setCols(newCols);
-                  setSelectionLocked(false);
-                  setHoverCell({ row: rows - 1, col: newCols - 1 });
-                }}
-              />
-              {colError && <p className="text-xs text-red-500">{colError}</p>}
-            </div>
-            <Button
-              onClick={handleCreateTableClick}
-              disabled={rowError || colError ? true : false}
-            >
-              Create Table
-            </Button>
+    <div className="flex h-max flex-col gap-2 p-3 sm:flex-row sm:gap-3">
+      {/* Input selector */}
+      <form
+        className="xs:max-w-110 flex w-full min-w-30 flex-col gap-4 sm:h-full sm:min-w-41 sm:border-r sm:px-1"
+        onSubmit={(e) => handleCreateTableClick(e)}
+      >
+        <div className="xs:flex-row flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="rows-input" className="text-sm">
+              Rows
+            </label>
+            <Input
+              id="rows-input"
+              className="w-full text-sm"
+              type="text"
+              inputMode="numeric"
+              min={1}
+              max={maxRows}
+              value={rows}
+              onChange={(e) => {
+                const newRows = Number(e.target.value);
+                setRows(newRows);
+                setSelectionLocked(false);
+                setHoverCell({ row: newRows - 1, col: cols - 1 });
+              }}
+            />
+            {rowError && <p className="text-xs text-red-500">{rowError}</p>}
           </div>
-        )}
-      </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="cols-input" className="text-sm">
+              Columns
+            </label>
+            <Input
+              id="cols-input"
+              className="text-sm"
+              type="text"
+              inputMode="numeric"
+              min={1}
+              max={maxCols}
+              value={cols}
+              onChange={(e) => {
+                const newCols = Number(e.target.value);
+                setCols(newCols);
+                setSelectionLocked(false);
+                setHoverCell({ row: rows - 1, col: newCols - 1 });
+              }}
+            />
+            {colError && <p className="text-xs text-red-500">{colError}</p>}
+          </div>
+        </div>
 
+        <Button
+          type="submit"
+          // onClick={handleCreateTableClick}
+          disabled={rowError || colError ? true : false}
+        >
+          Create Table
+        </Button>
+      </form>
+
+      {/* Grid selector */}
       <div
         className={cn(
-          "grid! max-w-fit shrink-0 gap-1",
-          `xs:grid-cols-[repeat(12,16px)] grid-cols-[repeat(12,20px)]`,
+          "hidden max-w-fit shrink-0 gap-1 sm:grid!",
+          `grid-cols-[repeat(12,20px)] sm:grid-cols-[repeat(12,16px)]`,
         )}
         onMouseLeave={() => {
           if (!isSelectionLocked) {

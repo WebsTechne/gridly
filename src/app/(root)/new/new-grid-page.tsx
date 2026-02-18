@@ -3,43 +3,17 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn, toA1Col } from "@/lib/utils";
-import {
-  ChevronDown,
-  FloppyDiskIcon,
-  PencilEdit02Icon,
-  Settings02Icon,
-} from "@hugeicons/core-free-icons";
+import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 
+import { toast } from "sonner";
+import { EditListDialog, type Item } from "./edit-list-dialog";
 import { GridCell } from "./grid-cell";
 import { GridSelector } from "./grid-selector";
-import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+
 import { useRouter } from "next/navigation";
+import { GridToolbar } from "./grid-toolbar";
 
 export type TableTheme = "amber" | "classic" | "blue" | "excel" | "dafe";
 export type TableAlignment = "left" | "center" | "right";
@@ -80,30 +54,31 @@ export type TableData = {
   tags?: Tags[];
 };
 
+export const maxDescriptionLength = 200;
+
+export const themes = [
+  { id: "amber", label: "Amber" },
+  { id: "classic", label: "Classic" },
+  { id: "blue", label: "Blue" },
+  { id: "excel", label: "Excel" },
+  { id: "dafe", label: "Dafe" },
+];
+
+export const alignment = [
+  { id: "left", label: "Left" },
+  { id: "center", label: "Center" },
+  { id: "right", label: "Right" },
+];
+
 export function NewGridPage() {
   const router = useRouter();
 
   const [tableName, setTableName] = useState("");
-  const maxDescriptionLength = 200;
   const [tableDescription, setTableDescription] = useState("");
   const [tableTheme, setTableTheme] = useState<TableTheme>("amber");
   const [tableAlignment, setTableAlignment] =
     useState<TableAlignment>("center");
   const [tableOutline, setTableOutline] = useState<boolean>(true);
-
-  const themes = [
-    { id: "amber", label: "Amber" },
-    { id: "classic", label: "Classic" },
-    { id: "blue", label: "Blue" },
-    { id: "excel", label: "Excel" },
-    { id: "dafe", label: "Dafe" },
-  ];
-
-  const alignment = [
-    { id: "left", label: "Left" },
-    { id: "center", label: "Center" },
-    { id: "right", label: "Right" },
-  ];
 
   const [colHeadings, setColHeadings] = useState<ColumnHeadings>({});
   const [rowHeadings, setRowHeadings] = useState<RowHeadings>({});
@@ -193,6 +168,11 @@ export function NewGridPage() {
   const [selectedOutlineInDialog, setSelectedOutlineInDialog] =
     useState<boolean>(tableOutline);
 
+  const [editRowsDialogOpen, setEditRowsDialogOpen] = useState(false);
+  const [editColsDialogOpen, setEditColsDialogOpen] = useState(false);
+  const [rowItems, setRowItems] = useState<Item[]>([]);
+  const [colItems, setColItems] = useState<Item[]>([]);
+
   const updateTableOptions = ({
     theme,
     description,
@@ -213,202 +193,158 @@ export function NewGridPage() {
     setOptionsDialogOpen(false);
   };
 
+  useEffect(() => {
+    if (selectedGrid) {
+      const newRowItems = Array.from({ length: selectedGrid.rows }).map(
+        (_, i) => {
+          const rowId = (i + 1).toString();
+          return { id: rowId, value: rowHeadings[rowId] || "" };
+        },
+      );
+      setRowItems(newRowItems);
+
+      const newColItems = Array.from({ length: selectedGrid.cols }).map(
+        (_, i) => {
+          const colId = toA1Col(i);
+          return { id: colId, value: colHeadings[colId] || "" };
+        },
+      );
+      setColItems(newColItems);
+    }
+  }, [selectedGrid, rowHeadings, colHeadings]);
+
+  const handleSaveRows = (newItems: Item[]) => {
+    if (!selectedGrid) return;
+
+    const newRowCount = newItems.length;
+    const oldRowCount = selectedGrid.rows;
+
+    const newRowHeadings: RowHeadings = {};
+    newItems.forEach((item, i) => {
+      newRowHeadings[(i + 1).toString()] = item.value;
+    });
+
+    const newCells: GridCells = {};
+    const oldIdToNewId = new Map<string, string>();
+    newItems.forEach((item, i) => {
+      if (!item.id.startsWith("new-")) {
+        oldIdToNewId.set(item.id, (i + 1).toString());
+      }
+    });
+
+    for (let r = 1; r <= oldRowCount; r++) {
+      const oldRowId = r.toString();
+      const newRowId = oldIdToNewId.get(oldRowId);
+      if (newRowId) {
+        for (let c = 0; c < selectedGrid.cols; c++) {
+          const colId = toA1Col(c);
+          const oldCellId = `${colId}-${oldRowId}`;
+          const newCellId = `${colId}-${newRowId}`;
+          if (cells[oldCellId]) {
+            newCells[newCellId] = cells[oldCellId];
+          }
+        }
+      }
+    }
+
+    setSelectedGrid((prev) => (prev ? { ...prev, rows: newRowCount } : null));
+    setRowHeadings(newRowHeadings);
+    setCells(newCells);
+    setEditRowsDialogOpen(false);
+  };
+
+  const handleSaveCols = (newItems: Item[]) => {
+    if (!selectedGrid) return;
+
+    const newColCount = newItems.length;
+    const oldColCount = selectedGrid.cols;
+
+    const newColHeadings: ColumnHeadings = {};
+    newItems.forEach((item, i) => {
+      newColHeadings[toA1Col(i)] = item.value;
+    });
+
+    const newCells: GridCells = {};
+    const oldIdToNewId = new Map<string, string>();
+    newItems.forEach((item, i) => {
+      if (!item.id.startsWith("new-")) {
+        oldIdToNewId.set(item.id, toA1Col(i));
+      }
+    });
+
+    for (let c = 0; c < oldColCount; c++) {
+      const oldColId = toA1Col(c);
+      const newColId = oldIdToNewId.get(oldColId);
+      if (newColId) {
+        for (let r = 1; r <= selectedGrid.rows; r++) {
+          const rowId = r.toString();
+          const oldCellId = `${oldColId}-${rowId}`;
+          const newCellId = `${newColId}-${rowId}`;
+          if (cells[oldCellId]) {
+            newCells[newCellId] = cells[oldCellId];
+          }
+        }
+      }
+    }
+
+    setSelectedGrid((prev) => (prev ? { ...prev, cols: newColCount } : null));
+    setColHeadings(newColHeadings);
+    setCells(newCells);
+    setEditColsDialogOpen(false);
+  };
+
   return (
     <>
       <section className="flex flex-row items-center justify-between gap-5 overflow-x-clip">
         {/*<h1 className="heading">New Table</h1>*/}
 
-        <div className="flex w-full flex-row items-center justify-between gap-3">
-          {/* Table name */}
-          <div
-            className={cn(
-              "has-[input:focus]:border-primary relative h-10 w-55 max-w-75 flex-1 rounded-lg border-2 p-2 duration-100",
-              "[&:has(input:focus)>.name-label]:text-primary!",
-              "[&:has(input:focus)>.name-label]:top-0! [&:has(input:not(:placeholder-shown))>.name-label]:top-0!",
-              "[&:has(input:focus)>.name-label]:text-sm! [&:has(input:not(:placeholder-shown))>.name-label]:text-sm!",
-            )}
-          >
-            <input
-              value={tableName}
-              onChange={(val) => setTableName(val.target.value)}
-              placeholder=" "
-              className="absolute inset-0 rounded-[inherit] border-none px-2 text-sm outline-none md:text-base"
-            />
-            <span className="bg-background text-muted-foreground flex-center name-label pointer-events-none absolute top-1/2 z-2 h-6 -translate-y-1/2 px-1 leading-0 duration-100">
-              Table name
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* More options */}
-            <AlertDialog
-              open={optionsDialogOpen}
-              onOpenChange={(open) => {
-                setOptionsDialogOpen(open);
-                if (open) {
-                  setSelectedThemeInDialog(tableTheme);
-                }
-              }}
-            >
-              <AlertDialogTrigger
-                render={
-                  <Button
-                    variant="secondary"
-                    className="h-10"
-                    disabled={selectedGrid ? false : true}
-                  />
-                }
-              >
-                <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
-                <span className="hidden sm:inline-block">More options</span>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="sm:max-w-md!">
-                <FieldGroup>
-                  <Field className="w-full">
-                    <FieldLabel htmlFor="descriptionInDialog">
-                      Table description (optional)
-                    </FieldLabel>
-                    <Textarea
-                      id="descriptionInDialog"
-                      placeholder="Description"
-                      value={descriptionInDialog}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        if (v.length <= maxDescriptionLength)
-                          setDescriptionInDialog(v);
-                      }}
-                      className="max-w-full!"
-                    ></Textarea>
-                    <FieldError className="text-end">
-                      <p className="text-muted-foreground! text-xs!">
-                        {descriptionInDialog.length}/{maxDescriptionLength}
-                      </p>
-                    </FieldError>
-                  </Field>
-                </FieldGroup>
-
-                <div className="h-max w-full">
-                  <div
-                    className="flex h-max w-full cursor-pointer items-center justify-between py-1"
-                    onClick={() => setAppearanceExpanded((e) => !e)}
-                  >
-                    Appearance
-                    <HugeiconsIcon
-                      icon={ChevronDown}
-                      strokeWidth={2}
-                      className={cn(
-                        "size-5 duration-200",
-                        appearanceExpanded && "rotate-180",
-                      )}
-                    />
-                  </div>
-                  <div
-                    className={cn(
-                      "overflow-clip border-l-2 px-0.5 pl-2 duration-200",
-                      appearanceExpanded ? "h-max!" : "h-0",
-                    )}
-                  >
-                    <FieldGroup>
-                      {/* Choosing theme */}
-                      <Field>
-                        <FieldLabel className="text-muted-foreground!">
-                          Choose a theme
-                        </FieldLabel>
-                        <Select
-                          value={selectedThemeInDialog}
-                          onValueChange={(theme) =>
-                            setSelectedThemeInDialog(theme as TableTheme)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={selectedThemeInDialog} />
-                          </SelectTrigger>
-                          <SelectContent sideOffset={0}>
-                            {themes.map((theme) => (
-                              <SelectItem key={theme.id} value={theme.id}>
-                                {theme.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-
-                      {/* Alignment */}
-                      <Field>
-                        <FieldLabel className="text-muted-foreground!">
-                          Alignment
-                        </FieldLabel>
-                        <Select
-                          value={selectedAlignInDialog}
-                          onValueChange={(al) =>
-                            setSelectedAlignInDialog(al as TableAlignment)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={selectedAlignInDialog} />
-                          </SelectTrigger>
-                          <SelectContent sideOffset={0}>
-                            {alignment.map((align) => (
-                              <SelectItem key={align.id} value={align.id}>
-                                {align.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-
-                      <Field orientation="horizontal">
-                        <FieldLabel
-                          htmlFor="outline-switch"
-                          className="text-muted-foreground! cursor-pointer"
-                        >
-                          Outline
-                        </FieldLabel>
-                        <Switch
-                          id="outline-switch"
-                          checked={selectedOutlineInDialog}
-                          className="cursor-pointer"
-                          onCheckedChange={(checked) =>
-                            setSelectedOutlineInDialog(checked)
-                          }
-                        />
-                      </Field>
-                    </FieldGroup>
-                  </div>
-                </div>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() =>
-                      updateTableOptions({
-                        theme: selectedThemeInDialog,
-                        description: descriptionInDialog,
-                        alignment: selectedAlignInDialog,
-                        outline: selectedOutlineInDialog,
-                      })
-                    }
-                  >
-                    Save
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Save button */}
-            <Button
-              variant="default"
-              className="h-10"
-              onClick={handleSaveTable}
-            >
-              <HugeiconsIcon icon={FloppyDiskIcon} strokeWidth={2} />
-              <span className="hidden sm:inline-block">Save</span>
-            </Button>
-          </div>
-        </div>
+        <GridToolbar
+          tableName={tableName}
+          setTableName={setTableName}
+          optionsDialogOpen={optionsDialogOpen}
+          setOptionsDialogOpen={setOptionsDialogOpen}
+          tableTheme={tableTheme}
+          selectedGrid={selectedGrid}
+          descriptionInDialog={descriptionInDialog}
+          setDescriptionInDialog={setDescriptionInDialog}
+          appearanceExpanded={appearanceExpanded}
+          setAppearanceExpanded={setAppearanceExpanded}
+          selectedThemeInDialog={selectedThemeInDialog}
+          setSelectedThemeInDialog={setSelectedThemeInDialog}
+          selectedAlignInDialog={selectedAlignInDialog}
+          setSelectedAlignInDialog={setSelectedAlignInDialog}
+          selectedOutlineInDialog={selectedOutlineInDialog}
+          setSelectedOutlineInDialog={setSelectedOutlineInDialog}
+          updateTableOptions={updateTableOptions}
+          handleSaveTable={handleSaveTable}
+          editRowsDialogOpen={editRowsDialogOpen}
+          setEditRowsDialogOpen={setEditRowsDialogOpen}
+          editColsDialogOpen={editColsDialogOpen}
+          setEditColsDialogOpen={setEditColsDialogOpen}
+        />
       </section>
 
       <Separator />
+
+      <EditListDialog
+        open={editRowsDialogOpen}
+        onOpenChange={setEditRowsDialogOpen}
+        title="Edit Rows"
+        items={rowItems}
+        maxItems={maxRows}
+        onItemsChange={setRowItems}
+        onSave={() => handleSaveRows(rowItems)}
+      />
+
+      <EditListDialog
+        open={editColsDialogOpen}
+        onOpenChange={setEditColsDialogOpen}
+        title="Edit Columns"
+        items={colItems}
+        maxItems={maxCols}
+        onItemsChange={setColItems}
+        onSave={() => handleSaveCols(colItems)}
+      />
 
       <section
         className={cn("overflow-x-clip px-0! py-2.5", selectedGrid && "")}
@@ -423,88 +359,47 @@ export function NewGridPage() {
           <ScrollArea className="table-wrap w-full">
             <div className="mx-3 w-max border-2 p-3">
               {tableName && <h3 className="font-heading mb-2">{tableName}</h3>}
-              <div
+              <section
                 className={cn(
-                  "gridly-table not-last:mb-2",
-                  tableTheme,
-                  `align-cell-${tableAlignment}`,
-                  !tableOutline && "no-outline",
+                  "relative h-max w-max",
+                  "[&:hover>.new-line]:pointer-events-auto [&:hover>.new-line]:opacity-100",
                 )}
-                style={
-                  {
-                    gridTemplateColumns: `minmax(80px, auto) repeat(${selectedGrid.cols}, minmax(60px, auto))`,
-                    gridAutoRows: "minmax(40px, auto)",
-                    "--rows": selectedGrid.rows + 1,
-                    "--cols": selectedGrid.cols + 1,
-                  } as CSSProperties
-                }
               >
-                {/* Empty top-left corner */}
-                <div className="bg-transparent" />
+                <div
+                  className={cn(
+                    "gridly-table not-last:mb-2",
+                    tableTheme,
+                    `align-cell-${tableAlignment}`,
+                    !tableOutline && "no-outline",
+                  )}
+                  style={
+                    {
+                      gridTemplateColumns: `minmax(80px, auto) repeat(${selectedGrid.cols}, minmax(60px, auto))`,
+                      gridAutoRows: "minmax(40px, auto)",
+                      "--rows": selectedGrid.rows + 1,
+                      "--cols": selectedGrid.cols + 1,
+                    } as CSSProperties
+                  }
+                >
+                  {/* Empty top-left corner */}
+                  <div className="bg-transparent" />
 
-                {/* Column Headers */}
-                {Array.from({ length: selectedGrid.cols }).map((_, col) => {
-                  const colId = toA1Col(col);
-                  const isEditing =
-                    editingHeading?.type === "col" &&
-                    editingHeading?.id === colId;
-                  return isEditing ? (
-                    <div key={`col-header-${colId}`} className="relative">
-                      <input
-                        key={`col-header-input-${colId}`}
-                        type="text"
-                        value={colHeadings[colId] || ""}
-                        onChange={(e) =>
-                          setColHeadings((prev) => ({
-                            ...prev,
-                            [colId]: e.target.value,
-                          }))
-                        }
-                        onBlur={() => setEditingHeading(null)}
-                        autoFocus
-                        className="border-primary absolute inset-0 rounded-none p-2 text-center"
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      key={`col-header-${colId}`}
-                      onClick={() =>
-                        setEditingHeading({ type: "col", id: colId })
-                      }
-                      className="colHead"
-                    >
-                      <span>{colHeadings[colId] || colId}</span>
-                      <div className="flex-center bg-card/60 edit-icon pointer-events-none absolute inset-1 z-100 rounded-sm opacity-0 backdrop-blur-sm duration-100">
-                        <HugeiconsIcon
-                          icon={PencilEdit02Icon}
-                          strokeWidth={2}
-                          className="text-muted-foreground size-4"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Row Headers and Data Cells */}
-                {Array.from({ length: selectedGrid.rows }).flatMap((_, row) => {
-                  const rowId = (row + 1).toString();
-                  const isEditingRow =
-                    editingHeading?.type === "row" &&
-                    editingHeading?.id === rowId;
-
-                  return [
-                    // Row Header
-                    isEditingRow ? (
-                      <div className="relative">
-                        {" "}
+                  {/* Column Headers */}
+                  {Array.from({ length: selectedGrid.cols }).map((_, col) => {
+                    const colId = toA1Col(col);
+                    const isEditing =
+                      editingHeading?.type === "col" &&
+                      editingHeading?.id === colId;
+                    return isEditing ? (
+                      <div key={`col-header-${colId}`} className="relative">
                         <input
-                          key={`row-header-input-${rowId}`}
+                          key={`col-header-input-${colId}`}
                           type="text"
-                          value={rowHeadings[rowId] || ""}
+                          value={colHeadings[colId] || ""}
                           onChange={(e) =>
-                            setRowHeadings((prev) => ({
+                            setColHeadings((prev) => ({
                               ...prev,
-                              [rowId]: e.target.value,
+                              [colId]: e.target.value,
                             }))
                           }
                           onBlur={() => setEditingHeading(null)}
@@ -514,13 +409,13 @@ export function NewGridPage() {
                       </div>
                     ) : (
                       <div
-                        key={`row-header-${rowId}`}
+                        key={`col-header-${colId}`}
                         onClick={() =>
-                          setEditingHeading({ type: "row", id: rowId })
+                          setEditingHeading({ type: "col", id: colId })
                         }
-                        className="rowHead"
+                        className="colHead"
                       >
-                        <span>{rowHeadings[rowId] || rowId}</span>
+                        <span>{colHeadings[colId] || colId}</span>
                         <div className="flex-center bg-card/60 edit-icon pointer-events-none absolute inset-1 z-100 rounded-sm opacity-0 backdrop-blur-sm duration-100">
                           <HugeiconsIcon
                             icon={PencilEdit02Icon}
@@ -529,58 +424,109 @@ export function NewGridPage() {
                           />
                         </div>
                       </div>
-                    ),
-                    // Data cells for this row
-                    ...Array.from({ length: selectedGrid.cols }).map(
-                      (_, col) => {
-                        const colId = toA1Col(col);
-                        const cellId = `${colId}-${rowId}`;
-                        const cellData = cells[cellId];
+                    );
+                  })}
 
-                        const isEditingCell = editingCell?.cellId === cellId;
+                  {/* Row Headers and Data Cells */}
+                  {Array.from({ length: selectedGrid.rows }).flatMap(
+                    (_, row) => {
+                      const rowId = (row + 1).toString();
+                      const isEditingRow =
+                        editingHeading?.type === "row" &&
+                        editingHeading?.id === rowId;
 
-                        return (
-                          <GridCell
-                            key={`cell-${cellId}`}
-                            cellId={cellId}
-                            cellData={cellData}
-                            rowHeader={rowHeadings[rowId] || rowId}
-                            colHeader={colHeadings[colId] || colId}
-                            isEditing={isEditingCell}
-                            editingContent={editingCell?.content ?? ""}
-                            onOpenChange={(open) => {
-                              if (open) {
-                                setEditingCell({
-                                  cellId,
-                                  content: cellData?.content || "",
-                                });
-                              } else {
-                                setEditingCell(null);
+                      return [
+                        // Row Header
+                        isEditingRow ? (
+                          <div className="relative">
+                            {" "}
+                            <input
+                              key={`row-header-input-${rowId}`}
+                              type="text"
+                              value={rowHeadings[rowId] || ""}
+                              onChange={(e) =>
+                                setRowHeadings((prev) => ({
+                                  ...prev,
+                                  [rowId]: e.target.value,
+                                }))
                               }
-                            }}
-                            onContentChange={(value) => {
-                              setEditingCell((prev) =>
-                                prev ? { ...prev, content: value } : null,
-                              );
-                            }}
-                            onSave={() => {
-                              if (!editingCell) return;
-                              setCells((prev) => ({
-                                ...prev,
-                                [cellId]: {
-                                  ...prev[cellId],
-                                  content: editingCell.content,
-                                },
-                              }));
-                              setEditingCell(null); // closes popover
-                            }}
-                          />
-                        );
-                      },
-                    ),
-                  ];
-                })}
-              </div>
+                              onBlur={() => setEditingHeading(null)}
+                              autoFocus
+                              className="border-primary absolute inset-0 rounded-none p-2 text-center"
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            key={`row-header-${rowId}`}
+                            onClick={() =>
+                              setEditingHeading({ type: "row", id: rowId })
+                            }
+                            className="rowHead"
+                          >
+                            <span>{rowHeadings[rowId] || rowId}</span>
+                            <div className="flex-center bg-card/60 edit-icon pointer-events-none absolute inset-1 z-100 rounded-sm opacity-0 backdrop-blur-sm duration-100">
+                              <HugeiconsIcon
+                                icon={PencilEdit02Icon}
+                                strokeWidth={2}
+                                className="text-muted-foreground size-4"
+                              />
+                            </div>
+                          </div>
+                        ),
+                        // Data cells for this row
+                        ...Array.from({ length: selectedGrid.cols }).map(
+                          (_, col) => {
+                            const colId = toA1Col(col);
+                            const cellId = `${colId}-${rowId}`;
+                            const cellData = cells[cellId];
+
+                            const isEditingCell =
+                              editingCell?.cellId === cellId;
+
+                            return (
+                              <GridCell
+                                key={`cell-${cellId}`}
+                                cellId={cellId}
+                                cellData={cellData}
+                                rowHeader={rowHeadings[rowId] || rowId}
+                                colHeader={colHeadings[colId] || colId}
+                                isEditing={isEditingCell}
+                                editingContent={editingCell?.content ?? ""}
+                                onOpenChange={(open) => {
+                                  if (open) {
+                                    setEditingCell({
+                                      cellId,
+                                      content: cellData?.content || "",
+                                    });
+                                  } else {
+                                    setEditingCell(null);
+                                  }
+                                }}
+                                onContentChange={(value) => {
+                                  setEditingCell((prev) =>
+                                    prev ? { ...prev, content: value } : null,
+                                  );
+                                }}
+                                onSave={() => {
+                                  if (!editingCell) return;
+                                  setCells((prev) => ({
+                                    ...prev,
+                                    [cellId]: {
+                                      ...prev[cellId],
+                                      content: editingCell.content,
+                                    },
+                                  }));
+                                  setEditingCell(null); // closes popover
+                                }}
+                              />
+                            );
+                          },
+                        ),
+                      ];
+                    },
+                  )}
+                </div>
+              </section>
 
               <div className="flex flex-wrap justify-end not-last:mb-1">
                 {tableDescription && (
