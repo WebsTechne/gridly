@@ -28,7 +28,6 @@ export function TableLoader({ id }: TableLoaderProps) {
       <p className="text-muted-foreground animate-pulse p-3">Loading...</p>
     );
   }
-  w;
 
   if (!table) {
     return (
