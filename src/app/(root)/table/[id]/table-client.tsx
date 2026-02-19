@@ -245,7 +245,7 @@ export function TableClient({ table }: { table: TableData }) {
 
       <section className="overflow-x-clip px-0! py-2.5">
         <ScrollArea className="table-wrap w-full">
-          <div className="mx-3 w-max border-2 p-3">
+          <div className="mx-3 w-max border-2 border-dashed p-3">
             {tableData.name && (
               <h3 className="font-heading mb-2">{tableData.name}</h3>
             )}

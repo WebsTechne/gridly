@@ -296,7 +296,12 @@ export function NewGridPage() {
 
   return (
     <>
-      <section className="flex flex-row items-center justify-between gap-5 overflow-x-clip">
+      <section
+        className={cn(
+          "flex flex-row items-center justify-between gap-5 overflow-x-clip",
+          !selectedGrid && "hidden!",
+        )}
+      >
         {/*<h1 className="heading">New Table</h1>*/}
 
         <GridToolbar
@@ -358,7 +363,7 @@ export function NewGridPage() {
           />
         ) : (
           <ScrollArea className="table-wrap w-full">
-            <div className="mx-3 w-max border-2 p-3">
+            <div className="mx-3 w-max border-2 border-dashed p-3">
               {tableName && <h3 className="font-heading mb-2">{tableName}</h3>}
               <section
                 className={cn(
