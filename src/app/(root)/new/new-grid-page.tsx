@@ -316,7 +316,7 @@ export function NewGridPage() {
           selectedOutlineInDialog={selectedOutlineInDialog}
           setSelectedOutlineInDialog={setSelectedOutlineInDialog}
           updateTableOptions={updateTableOptions}
-          handleSaveTable={handleSaveTable}
+          onSave={handleSaveTable}
           editRowsDialogOpen={editRowsDialogOpen}
           setEditRowsDialogOpen={setEditRowsDialogOpen}
           editColsDialogOpen={editColsDialogOpen}
@@ -530,7 +530,7 @@ export function NewGridPage() {
 
               <div className="flex flex-wrap justify-end not-last:mb-1">
                 {tableDescription && (
-                  <p className="text-muted-foreground max-w-130 text-right text-sm">
+                  <p className="text-muted-foreground max-w-145 text-right text-sm">
                     {tableDescription}
                   </p>
                 )}

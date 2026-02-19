@@ -38,6 +38,7 @@ import {
 } from "./new-grid-page";
 
 interface GridToolbarProps {
+  tableId?: string;
   tableName: string;
   setTableName: (name: string) => void;
   optionsDialogOpen: boolean;
@@ -62,7 +63,8 @@ interface GridToolbarProps {
     alignment: TableAlignment;
     outline: boolean;
   }) => void;
-  handleSaveTable: () => void;
+  onSave: () => void;
+  isSaveDisabled?: boolean;
   editRowsDialogOpen: boolean;
   setEditRowsDialogOpen: (open: boolean) => void;
   editColsDialogOpen: boolean;
@@ -70,6 +72,7 @@ interface GridToolbarProps {
 }
 
 export function GridToolbar({
+  tableId,
   tableName,
   setTableName,
   optionsDialogOpen,
@@ -87,7 +90,8 @@ export function GridToolbar({
   selectedOutlineInDialog,
   setSelectedOutlineInDialog,
   updateTableOptions,
-  handleSaveTable,
+  onSave,
+  isSaveDisabled,
   editRowsDialogOpen,
   setEditRowsDialogOpen,
   editColsDialogOpen,
@@ -290,9 +294,16 @@ export function GridToolbar({
         </AlertDialog>
 
         {/* Save button */}
-        <Button variant="default" className="h-10" onClick={handleSaveTable}>
+        <Button
+          variant="default"
+          className="h-10"
+          onClick={onSave}
+          disabled={isSaveDisabled}
+        >
           <HugeiconsIcon icon={FloppyDiskIcon} strokeWidth={2} />
-          <span className="hidden sm:inline-block">Save</span>
+          <span className="hidden sm:inline-block">
+            {tableId ? "Update" : "Save"}
+          </span>
         </Button>
       </div>
     </div>
