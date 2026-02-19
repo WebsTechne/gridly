@@ -151,7 +151,7 @@ export function NewGridPage() {
 
       toast.success("Table saved successfully!");
 
-      router.push(`/tables/${newTableId}`);
+      router.push(`/table/${newTableId}`);
     } catch (err) {
       toast.error("An error occurred while saving the table.");
     }
