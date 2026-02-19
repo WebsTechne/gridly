@@ -9,6 +9,7 @@ import { type CSSProperties, useEffect, useState } from "react";
 
 import { toast } from "sonner";
 import { EditListDialog, type Item } from "./edit-list-dialog";
+export type { Item };
 import { GridCell } from "./grid-cell";
 import { GridSelector } from "./grid-selector";
 

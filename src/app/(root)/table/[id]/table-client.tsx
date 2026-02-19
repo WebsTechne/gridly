@@ -7,35 +7,20 @@ import {
   ColumnHeadings,
   RowHeadings,
   GridCells,
-  CellData,
-  Item,
-  themes,
-  alignment,
-  maxDescriptionLength,
 } from "../../new/new-grid-page";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn, toA1Col } from "@/lib/utils";
-import { PencilEdit02Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
+import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { type CSSProperties, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { GridCell } from "../../new/grid-cell";
 import { GridToolbar } from "../../new/grid-toolbar";
-import { EditListDialog } from "../../new/edit-list-dialog";
-import { useRouter } from "next/navigation";
+import { EditListDialog, Item } from "../../new/edit-list-dialog";
 
 export function TableClient({ table }: { table: TableData }) {
-  const router = useRouter();
   const [tableData, setTableData] = useState<TableData>(table);
 
   const hasChanges = JSON.stringify(table) !== JSON.stringify(tableData);
