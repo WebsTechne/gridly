@@ -15,6 +15,7 @@ import { GridSelector } from "./grid-selector";
 
 import { useRouter } from "next/navigation";
 import { GridToolbar } from "./grid-toolbar";
+import { ThemeSelector } from "./theme-selector";
 
 export type TableTheme = "amber" | "classic" | "blue" | "excel" | "dafe";
 export type TableAlignment = "left" | "center" | "right";
@@ -174,6 +175,8 @@ export function NewGridPage() {
   const [rowItems, setRowItems] = useState<Item[]>([]);
   const [colItems, setColItems] = useState<Item[]>([]);
 
+  const [themeSelectorOpen, setThemeSelectorOpen] = useState<boolean>(false);
+
   const updateTableOptions = ({
     theme,
     description,
@@ -296,6 +299,13 @@ export function NewGridPage() {
 
   return (
     <>
+      <ThemeSelector
+        tableTheme={tableTheme}
+        setTableTheme={setTableTheme}
+        themeSelectorOpen={themeSelectorOpen}
+        setThemeSelectorOpen={setThemeSelectorOpen}
+      />
+
       <section
         className={cn(
           "flex flex-row items-center justify-between gap-5 overflow-x-clip",
@@ -327,6 +337,7 @@ export function NewGridPage() {
           setEditRowsDialogOpen={setEditRowsDialogOpen}
           editColsDialogOpen={editColsDialogOpen}
           setEditColsDialogOpen={setEditColsDialogOpen}
+          setThemeSelectorOpen={setThemeSelectorOpen}
         />
       </section>
 

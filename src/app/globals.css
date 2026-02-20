@@ -250,6 +250,27 @@
   }
 }
 
-.slot[data-swapy-highlighted] {
-  background: rgba(255, 255, 255, 0.2);
+.theme-preview {
+  @apply relative flex flex-col gap-1 overflow-clip rounded-md border pt-1 pl-1 not-[.active]:cursor-pointer;
+
+  .preview {
+    @apply bg-border -mr-1 -mb-1 ml-6 grid aspect-2/1 h-25 grid-cols-4 grid-rows-3 gap-px overflow-clip rounded-tl-md p-px;
+    grid-template-areas:
+      "c c c c"
+      "r b b b"
+      "r b b b";
+
+    .colHead {
+      grid-area: c;
+      @apply bg-border *:bg-background grid grid-cols-4 grid-rows-1 gap-px overflow-clip rounded-tl-md;
+    }
+    .rowHead {
+      grid-area: r;
+      @apply bg-border *:bg-background grid grid-cols-1 grid-rows-2 gap-px;
+    }
+    .body {
+      grid-area: b;
+      @apply bg-border *:bg-background grid grid-cols-3 grid-rows-2 gap-px;
+    }
+  }
 }

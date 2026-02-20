@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { GridCell } from "../../new/grid-cell";
 import { GridToolbar } from "../../new/grid-toolbar";
 import { EditListDialog, Item } from "../../new/edit-list-dialog";
+import { ThemeSelector } from "../../new/theme-selector";
 
 export function TableClient({ table }: { table: TableData }) {
   const [tableData, setTableData] = useState<TableData>(table);
@@ -50,6 +51,8 @@ export function TableClient({ table }: { table: TableData }) {
   const [editColsDialogOpen, setEditColsDialogOpen] = useState(false);
   const [rowItems, setRowItems] = useState<Item[]>([]);
   const [colItems, setColItems] = useState<Item[]>([]);
+
+  const [themeSelectorOpen, setThemeSelectorOpen] = useState<boolean>(true);
 
   const maxRows = 14;
   const maxCols = 12;
@@ -190,6 +193,15 @@ export function TableClient({ table }: { table: TableData }) {
 
   return (
     <>
+      <ThemeSelector
+        tableTheme={tableData.style.theme}
+        setTableTheme={(val: TableTheme) =>
+          setTableData((p) => ({ ...p, style: { ...p.style, theme: val } }))
+        }
+        themeSelectorOpen={themeSelectorOpen}
+        setThemeSelectorOpen={setThemeSelectorOpen}
+      />
+
       <section className="flex flex-row items-center justify-between gap-5 overflow-x-clip">
         <GridToolbar
           tableId={tableData.id}
@@ -218,6 +230,7 @@ export function TableClient({ table }: { table: TableData }) {
           setEditRowsDialogOpen={setEditRowsDialogOpen}
           editColsDialogOpen={editColsDialogOpen}
           setEditColsDialogOpen={setEditColsDialogOpen}
+          setThemeSelectorOpen={setThemeSelectorOpen}
         />
       </section>
 

@@ -69,6 +69,7 @@ interface GridToolbarProps {
   setEditRowsDialogOpen: (open: boolean) => void;
   editColsDialogOpen: boolean;
   setEditColsDialogOpen: (open: boolean) => void;
+  setThemeSelectorOpen: (open: boolean) => void;
 }
 
 export function GridToolbar({
@@ -94,6 +95,7 @@ export function GridToolbar({
   isSaveDisabled,
   setEditRowsDialogOpen,
   setEditColsDialogOpen,
+  setThemeSelectorOpen,
 }: GridToolbarProps) {
   return (
     <>
@@ -344,7 +346,7 @@ export function GridToolbar({
         </button>
 
         <button
-          onClick={() => setEditColsDialogOpen(true)}
+          onClick={() => setThemeSelectorOpen(true)}
           className="flex-center bg-background text-muted-foreground hover:text-foreground h-full w-full flex-row gap-1 text-sm"
         >
           Theme

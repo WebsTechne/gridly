@@ -8,7 +8,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <header className="z-999 flex h-16 items-center justify-between border-b px-3 py-2">
         <Link
           href="/"
-          className="hover:text-primary text-[clamp(1.3rem,2vw,2.25rem)] font-black duration-300"
+          className="heading hover:text-primary text-[clamp(1.3rem,2vw,2.25rem)] font-black duration-300"
         >
           Gridly
         </Link>
