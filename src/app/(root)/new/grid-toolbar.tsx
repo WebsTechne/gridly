@@ -172,7 +172,7 @@ export function GridToolbar({
               variant="ghost"
               className="bg-background h-full rounded-none border-none!"
               disabled={selectedGrid ? false : true}
-              onClick={() => setOptionsDialogOpen(false)}
+              onClick={() => setOptionsDialogOpen(true)}
             >
               <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
               <span className="">More options</span>
