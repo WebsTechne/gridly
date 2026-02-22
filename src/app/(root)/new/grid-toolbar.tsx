@@ -24,8 +24,12 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
+  BrushIcon,
   ChevronDown,
   FloppyDiskIcon,
+  PaintBrush01Icon,
+  PaintBrush02Icon,
+  PaintBrush03Icon,
   Settings02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -133,195 +137,178 @@ export function GridToolbar({
             "xs:h-max flex flex-row items-start gap-3",
           )}
         >
-          <div className="flex items-center gap-3">
+          <div className="bg-border scrollbar-none flex h-10 max-w-full items-center gap-px overflow-clip overflow-x-auto rounded-lg p-px pr-0!">
             {/* Edit buttons */}
             <Button
-              variant="secondary"
-              className="h-10"
+              variant="ghost"
+              className="bg-background h-full rounded-none rounded-tl-md rounded-bl-md border-none!"
               disabled={!selectedGrid}
               onClick={() => setEditColsDialogOpen(true)}
             >
               Edit Columns
             </Button>
             <Button
-              variant="secondary"
-              className="h-10"
+              variant="ghost"
+              className="bg-background h-full rounded-none border-none!"
               disabled={!selectedGrid}
               onClick={() => setEditRowsDialogOpen(true)}
             >
               Edit Rows
             </Button>
 
-            {/* More options */}
-            <AlertDialog
-              open={optionsDialogOpen}
-              onOpenChange={(open) => {
-                setOptionsDialogOpen(open);
-                if (open) {
-                  setSelectedThemeInDialog(tableTheme);
-                }
-              }}
+            {/* Theme button */}
+            <Button
+              variant="ghost"
+              className="bg-background h-full rounded-none border-none!"
+              disabled={!selectedGrid}
+              onClick={() => setThemeSelectorOpen(true)}
             >
-              <AlertDialogTrigger
-                render={
-                  <Button
-                    variant="secondary"
-                    className="h-10"
-                    disabled={selectedGrid ? false : true}
-                  />
-                }
-              >
-                <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
-                <span className="hidden sm:inline-block">More options</span>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="sm:max-w-md!">
-                <FieldGroup>
-                  <Field className="w-full">
-                    <FieldLabel htmlFor="descriptionInDialog">
-                      Table description (optional)
-                    </FieldLabel>
-                    <Textarea
-                      id="descriptionInDialog"
-                      placeholder="Description"
-                      value={descriptionInDialog}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        if (v.length <= maxDescriptionLength)
-                          setDescriptionInDialog(v);
-                      }}
-                      className="max-w-full!"
-                    ></Textarea>
-                    <FieldError className="text-end">
-                      <p className="text-muted-foreground! text-xs!">
-                        {descriptionInDialog.length}/{maxDescriptionLength}
-                      </p>
-                    </FieldError>
-                  </Field>
-                </FieldGroup>
+              <HugeiconsIcon icon={PaintBrush03Icon} strokeWidth={2} />
+              Themes
+            </Button>
 
-                <div className="h-max w-full">
-                  <div
-                    className="flex h-max w-full cursor-pointer items-center justify-between py-1"
-                    onClick={() => setAppearanceExpanded((e) => !e)}
-                  >
-                    Appearance
-                    <HugeiconsIcon
-                      icon={ChevronDown}
-                      strokeWidth={2}
-                      className={cn(
-                        "size-5 duration-200",
-                        appearanceExpanded && "rotate-180",
-                      )}
-                    />
-                  </div>
-                  <div
-                    className={cn(
-                      "overflow-clip border-l-2 px-0.5 pl-2 duration-200",
-                      appearanceExpanded ? "h-max!" : "h-0",
-                    )}
-                  >
-                    <FieldGroup>
-                      {/* Choosing theme */}
-                      <Field>
-                        <FieldLabel className="text-muted-foreground!">
-                          Choose a theme
-                        </FieldLabel>
-                        <Select
-                          value={selectedThemeInDialog}
-                          onValueChange={(theme) =>
-                            setSelectedThemeInDialog(theme as TableTheme)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={selectedThemeInDialog} />
-                          </SelectTrigger>
-                          <SelectContent sideOffset={0}>
-                            {themes.map((theme) => (
-                              <SelectItem key={theme.id} value={theme.id}>
-                                {theme.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-
-                      {/* Alignment */}
-                      <Field>
-                        <FieldLabel className="text-muted-foreground!">
-                          Alignment
-                        </FieldLabel>
-                        <Select
-                          value={selectedAlignInDialog}
-                          onValueChange={(al) =>
-                            setSelectedAlignInDialog(al as TableAlignment)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={selectedAlignInDialog} />
-                          </SelectTrigger>
-                          <SelectContent sideOffset={0}>
-                            {alignment.map((align) => (
-                              <SelectItem key={align.id} value={align.id}>
-                                {align.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-
-                      <Field orientation="horizontal">
-                        <FieldLabel
-                          htmlFor="outline-switch"
-                          className="text-muted-foreground! cursor-pointer"
-                        >
-                          Outline
-                        </FieldLabel>
-                        <Switch
-                          id="outline-switch"
-                          checked={selectedOutlineInDialog}
-                          className="cursor-pointer"
-                          onCheckedChange={(checked) =>
-                            setSelectedOutlineInDialog(checked)
-                          }
-                        />
-                      </Field>
-                    </FieldGroup>
-                  </div>
-                </div>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() =>
-                      updateTableOptions({
-                        theme: selectedThemeInDialog,
-                        description: descriptionInDialog,
-                        alignment: selectedAlignInDialog,
-                        outline: selectedOutlineInDialog,
-                      })
-                    }
-                  >
-                    Save
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* More options */}
+            <Button
+              variant="ghost"
+              className="bg-background h-full rounded-none border-none!"
+              disabled={selectedGrid ? false : true}
+              onClick={() => setOptionsDialogOpen(false)}
+            >
+              <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
+              <span className="">More options</span>
+            </Button>
 
             {/* Save button */}
             <Button
               variant="default"
-              className="h-10"
+              className="h-10 rounded-none rounded-tr-md rounded-br-md border-none!"
               onClick={onSave}
               disabled={isSaveDisabled}
             >
               <HugeiconsIcon icon={FloppyDiskIcon} strokeWidth={2} />
-              <span className="hidden sm:inline-block">
-                {tableId ? "Update" : "Save"}
-              </span>
+              <span className="">{tableId ? "Update" : "Save"}</span>
             </Button>
           </div>
         </section>
       </div>
+
+      <AlertDialog
+        open={optionsDialogOpen}
+        onOpenChange={(open) => {
+          setOptionsDialogOpen(open);
+          if (open) {
+            setSelectedThemeInDialog(tableTheme);
+          }
+        }}
+      >
+        <AlertDialogContent className="sm:max-w-md!">
+          <FieldGroup>
+            <Field className="w-full">
+              <FieldLabel htmlFor="descriptionInDialog">
+                Table description (optional)
+              </FieldLabel>
+              <Textarea
+                id="descriptionInDialog"
+                placeholder="Description"
+                value={descriptionInDialog}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v.length <= maxDescriptionLength)
+                    setDescriptionInDialog(v);
+                }}
+                className="max-w-full!"
+              ></Textarea>
+              <FieldError className="text-end">
+                <p className="text-muted-foreground! text-xs!">
+                  {descriptionInDialog.length}/{maxDescriptionLength}
+                </p>
+              </FieldError>
+            </Field>
+          </FieldGroup>
+
+          <div className="h-max w-full">
+            <div
+              className="flex h-max w-full cursor-pointer items-center justify-between py-1"
+              onClick={() => setAppearanceExpanded((e) => !e)}
+            >
+              Appearance
+              <HugeiconsIcon
+                icon={ChevronDown}
+                strokeWidth={2}
+                className={cn(
+                  "size-5 duration-200",
+                  appearanceExpanded && "rotate-180",
+                )}
+              />
+            </div>
+            <div
+              className={cn(
+                "overflow-clip border-l-2 px-0.5 pl-2 duration-200",
+                appearanceExpanded ? "h-max!" : "h-0",
+              )}
+            >
+              <FieldGroup>
+                {/* Alignment */}
+                <Field>
+                  <FieldLabel className="text-muted-foreground!">
+                    Alignment
+                  </FieldLabel>
+                  <Select
+                    value={selectedAlignInDialog}
+                    onValueChange={(al) =>
+                      setSelectedAlignInDialog(al as TableAlignment)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={selectedAlignInDialog} />
+                    </SelectTrigger>
+                    <SelectContent sideOffset={0}>
+                      {alignment.map((align) => (
+                        <SelectItem key={align.id} value={align.id}>
+                          {align.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field orientation="horizontal">
+                  <FieldLabel
+                    htmlFor="outline-switch"
+                    className="text-muted-foreground! cursor-pointer"
+                  >
+                    Outline
+                  </FieldLabel>
+                  <Switch
+                    id="outline-switch"
+                    checked={selectedOutlineInDialog}
+                    className="cursor-pointer"
+                    onCheckedChange={(checked) =>
+                      setSelectedOutlineInDialog(checked)
+                    }
+                  />
+                </Field>
+              </FieldGroup>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                updateTableOptions({
+                  theme: selectedThemeInDialog,
+                  description: descriptionInDialog,
+                  alignment: selectedAlignInDialog,
+                  outline: selectedOutlineInDialog,
+                })
+              }
+            >
+              Save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div
         className={cn(

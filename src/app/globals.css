@@ -167,6 +167,9 @@
 @utility scrollbar-thin {
   scrollbar-width: thin;
 }
+@utility scrollbar-none {
+  scrollbar-width: none;
+}
 
 .gridly-table {
   @apply bg-background grid w-max gap-0.5 text-xs not-[.no-outline]:p-0.5;

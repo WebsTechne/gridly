@@ -20,14 +20,14 @@ const ThemeSelector = ({
   return (
     <div
       className={cn(
-        "bg-background fixed top-0 left-0 z-1005 flex h-screen w-full flex-col gap-4 overflow-y-auto pb-4 duration-250",
+        "bg-background fixed top-0 left-0 z-1005 flex h-screen w-full flex-col items-center gap-4 overflow-y-auto pb-4 duration-250",
         themeSelectorOpen
           ? "pointer-events-auto opacity-100"
           : "blur-in-sm pointer-events-none opacity-0",
-        "*:px-3",
+        "*:max-w-300 *:px-3",
       )}
     >
-      <header className="bg-background sticky top-0 z-20 flex items-center justify-between pt-4 pb-1">
+      <header className="bg-background sticky top-0 z-20 flex w-full items-center justify-between pt-4 pb-1">
         <h3 className="heading">Themes</h3>
         <button
           type="button"
@@ -41,14 +41,17 @@ const ThemeSelector = ({
         </button>
       </header>
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <section className="xs:grid-cols-2 grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {themes.map((t) => {
           const active = t.id === tableTheme;
 
           return (
             <div
               key={t.id}
-              onClick={() => setTableTheme(t.id as TableTheme)}
+              onClick={() => {
+                setTableTheme(t.id as TableTheme);
+                setThemeSelectorOpen(false);
+              }}
               className={cn(
                 "theme-preview",
                 active

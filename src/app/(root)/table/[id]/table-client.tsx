@@ -52,7 +52,7 @@ export function TableClient({ table }: { table: TableData }) {
   const [rowItems, setRowItems] = useState<Item[]>([]);
   const [colItems, setColItems] = useState<Item[]>([]);
 
-  const [themeSelectorOpen, setThemeSelectorOpen] = useState<boolean>(true);
+  const [themeSelectorOpen, setThemeSelectorOpen] = useState<boolean>(false);
 
   const maxRows = 14;
   const maxCols = 12;
